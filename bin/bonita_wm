@@ -4,7 +4,7 @@
 # -----------
 #
 #
-#  Script to handle bonita workspaces in the communitiy editino
+#  Script to handle bonita workspaces in the communitiy edition
 #
 # ---------------------------------------------------------------------------------------
 # Author
@@ -42,11 +42,11 @@ ROOT_DIR="$(dirname $(readlink ${BASH_SOURCE[*]}))/.."
 BONITA_WS_DIR="${BONITA_INSTALL_DIR}/workspace"
 
 #===  VARIABLE =================================================================
-#         NAME:  WS_DIR
+#         NAME:  BONITAWM_WS_DIR
 #  DESCRIPTION:  Represents the directory where the script holds its workspaces.
 #===============================================================================
 
-[ -z $WS_DIR ] && WS_DIR="${ROOT_DIR}/workspaces"
+[ -z $BONITAWM_WS_DIR ] && BONITAWM_WS_DIR="${ROOT_DIR}/workspaces"
 
 #===  VARIABLE =================================================================
 #         NAME:  EXAMPLE
@@ -83,8 +83,6 @@ function usage()
 
 [ $# -eq 0 ] && echo "Can't work without arguments" && exit 1
 
-#===  HELPERS ==================================================================
-
 #===  HELPER ===================================================================
 #        NAME: _script_is_handling_workspaces
 # DESCRIPTION: checks if the script is handling workspaces.
@@ -103,7 +101,7 @@ function _script_is_not_handling_workspaces()
 function _workspace_exists()
 {
     local ws_name=$1;
-    [ -d "${WS_DIR}/$ws_name" ]
+    [ -d "${BONITAWM_WS_DIR}/$ws_name" ]
 }
 
 #===  FUNCTION  ================================================================
@@ -117,9 +115,9 @@ function new_workspace()
 
     [ -z $ws_name ] && echo "Need a name for the new workspace." && exit 1
 
-    mkdir "${WS_DIR}/${ws_name}"
+    mkdir "${BONITAWM_WS_DIR}/${ws_name}"
 
-    tar -xzf $EXAMPLE -C "${WS_DIR}/${ws_name}"
+    tar -xzf $EXAMPLE -C "${BONITAWM_WS_DIR}/${ws_name}"
 }
 
 
@@ -144,7 +142,7 @@ function enable_workspace()
         rm "${BONITA_WS_DIR}/default"
 
         # Now we can enable the requested workspace
-        ln -s "${WS_DIR}/${ws_name}" "${BONITA_WS_DIR}/default"
+        ln -s "${BONITAWM_WS_DIR}/${ws_name}" "${BONITA_WS_DIR}/default"
 
         echo "${ws_name} successfully enabled"
     else
@@ -159,7 +157,7 @@ function enable_workspace()
 
 function list_workspaces()
 {
-    ls -1 $WS_DIR;
+    ls -1 $BONITAWM_WS_DIR
 }
 
 #===  FUNCTION  ================================================================
@@ -175,10 +173,10 @@ function initialize_workspace_management()
         # back it up and re-enable it.
 
         echo "Backing up default workspace in case you had anything done ;)"
-        mv "${BONITA_WS_DIR}/default" "${WS_DIR}/default"
+        mv "${BONITA_WS_DIR}/default" "${BONITAWM_WS_DIR}/default"
 
         echo "Enabling default workspace"
-        ln -s "${WS_DIR}/default" "${BONITA_WS_DIR}/default"
+        ln -s "${BONITAWM_WS_DIR}/default" "${BONITA_WS_DIR}/default"
     else
         echo "Workspace management seems to be already initialized."
     fi
