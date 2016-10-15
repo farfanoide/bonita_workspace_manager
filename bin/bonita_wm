@@ -1,0 +1,201 @@
+#!/usr/bin/env bash
+# ---------------------------------------------------------------------------------------
+# Description
+# -----------
+#
+#
+#  Script to handle bonita workspaces in the communitiy editino
+#
+# ---------------------------------------------------------------------------------------
+# Author
+# -------
+#
+#  * Farfanoide (https://github.com/farfanoide)
+#
+# ---------------------------------------------------------------------------------------
+
+set -e
+
+#===  BASIC CONFIGURATIONS CHECKS ==============================================
+
+if [ -z $BONITA_INSTALL_DIR ]; then
+  echo
+  echo "Can't work unless i know where bonita is installed"
+  echo "Please set BONITA_INSTALL_DIR to point to this directory."
+  echo
+  exit 1
+fi
+
+
+#===  VARIABLE =================================================================
+#         NAME:  ROOT_DIR
+#  DESCRIPTION:  Represents the directory where the script is installed.
+#===============================================================================
+
+ROOT_DIR="$(dirname $(readlink ${BASH_SOURCE[*]}))/.."
+
+#===  VARIABLE =================================================================
+#         NAME:  BONITA_WS_DIR
+#  DESCRIPTION:  Represents the directory where bonita holds workspaces.
+#===============================================================================
+
+BONITA_WS_DIR="${BONITA_INSTALL_DIR/workspace}"
+
+#===  VARIABLE =================================================================
+#         NAME:  WS_DIR
+#  DESCRIPTION:  Represents the directory where the script holds its workspaces.
+#===============================================================================
+
+WS_DIR="${ROOT_DIR}/workspaces"
+
+#===  VARIABLE =================================================================
+#         NAME:  EXAMPLE
+#  DESCRIPTION:  Represents the default workspace file used to create new ones.
+#===============================================================================
+
+EXAMPLE="${ROOT_DIR}/default.tar.gz"
+
+
+SCPT_VERSION="0.1"
+
+#===  FUNCTION  ================================================================
+#         NAME:  usage
+#  DESCRIPTION:  Display usage information.
+#===============================================================================
+
+function usage ()
+{
+  echo "Usage :  $0 [options] [--]
+
+  Options:
+  -h|help       Display this message
+  -v|version    Display script version"
+
+}
+
+[ $# -eq 0 ] && echo "Can't work without arguments" && exit 1
+
+#===  HELPERS ==================================================================
+
+#===  HELPER ===================================================================
+#        NAME: _script_is_handling_workspaces
+# DESCRIPTION: checks if the script is handling workspaces.
+#===============================================================================
+
+function _script_is_not_handling_workspaces()
+{
+  [ ! -h $BONITA_WS_DIR/default ]
+}
+
+#===  HELPER ===================================================================
+#         NAME:  _workspace_exists
+#  DESCRIPTION:  checks if a given workspace has alreaddy been created
+#===============================================================================
+
+function _workspace_exists ()
+{
+  local ws_name=$1;
+  [ -d "${WS_DIR}/$ws_name" ]
+}
+
+#===  FUNCTION  ================================================================
+#         NAME:  new_workspace
+#  DESCRIPTION:  create new bonita workspace
+#===============================================================================
+
+function new_workspace ()
+{
+  local ws_name=$1
+
+  [ -z $ws_name ] && echo "need a name for the new workspace" && exit 1
+
+  mkdir "${WS_DIR}/${ws_name}"
+
+  tar -xzf $EXAMPLE -C "${WS_DIR}/${ws_name}"
+
+}    # ----------  end of function usage  ----------
+
+
+#===  FUNCTION  ================================================================
+#         NAME:  enable_workspace
+#  DESCRIPTION:  enable given bonita workspace
+#===============================================================================
+
+function enable_workspace()
+{
+  local ws_name=$1
+
+  [ -z $ws_name ] && echo "need a workspace to enable" && exit 1
+
+  if _script_is_not_handling_workspaces; then
+    echo 'Need to initialize script first' &&  exit 1;
+  fi
+
+  if _workspace_exists $ws_name; then
+    rm "${BONITA_WS_DIR}/default" && \
+      ln -s "${WS_DIR}/${ws_name}" "${BONITA_WS_DIR}/default" && \
+      echo "${ws_name} successfully enabled"
+  else
+    echo "workspace not available." && exit 1
+  fi
+}
+
+#===  FUNCTION  ================================================================
+#         NAME:  list_workspaces
+#  DESCRIPTION:  list available workspaces
+#===============================================================================
+
+function list_workspaces()
+{
+  ls $WS_DIR;
+}
+
+#===  FUNCTION  ================================================================
+#         NAME:  initialize_workspace_management
+#  DESCRIPTION:  Initializes workspace management.
+#                This means the script will start handling workspaces for bonita.
+#===============================================================================
+
+function initialize_workspace_management ()
+{
+  if [ -d $BONITA_WS_DIR/default ]; then
+
+    # This means default workspace is still in place so we should back it up
+    # as default and enable it again.
+
+    echo "Backing up default workspace in case you had anything done ;)"
+    mv "${BONITA_WS_DIR}/default" $WS_DIR
+
+    echo "Enabling default workspace"
+    enable_workspace 'default'
+  fi
+}
+
+
+
+#-----------------------------------------------------------------------
+#  Handle command line arguments
+#-----------------------------------------------------------------------
+
+while getopts ":hviln:" opt; do
+  case $opt in
+
+    h|help   ) usage; exit 0 ;;
+
+    v|version) echo "$0 -- Version $SCPT_VERSION"; exit 0 ;;
+
+    i|initialize) initialize_workspace_management ;;
+
+    l|list   ) list_workspaces ;;
+
+    n|new    ) new_workspace $OPTARG ;;
+
+    e|enable ) enable_workspace $OPTARG ;;
+
+    * )  echo -e "\n  Option does not exist : $OPTARG\n" usage; exit 1; ;;
+
+  esac
+done
+
+shift $(($OPTIND-1))
+
