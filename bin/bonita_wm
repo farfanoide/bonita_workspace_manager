@@ -16,12 +16,21 @@
 
 set -e
 
+#===  COLORS AND CHARACTERS ====================================================
+
+R=$(tput setaf 1)
+G=$(tput setaf 2)
+Y=$(tput setaf 3)
+B=$(tput setaf 4)
+TAB='  '
+RESET=$(tput sgr0)
+
 #===  BASIC CONFIGURATIONS CHECKS ==============================================
 
 if [ -z $BONITA_INSTALL_DIR ]; then
     echo
-    echo "Can't work unless i know where Bonita BPM is installed"
-    echo "Please set \$BONITA_INSTALL_DIR to point to this directory."
+    echo -e "${R}Can't work unless i know where Bonita BPM is installed"
+    echo -e "Please set \$BONITA_INSTALL_DIR to point to this directory.${RESET}"
     echo
     exit 1
 fi
@@ -56,6 +65,13 @@ BONITA_WS_DIR="${BONITA_INSTALL_DIR}/workspace"
 EXAMPLE="${ROOT_DIR}/default.tar.gz"
 
 #===  VARIABLE =================================================================
+#         NAME:  SCPT_NAME
+#  DESCRIPTION:  Represents the name of the script
+#===============================================================================
+
+SCPT_NAME=$(basename $0)
+
+#===  VARIABLE =================================================================
 #         NAME:  SCPT_VERSION
 #  DESCRIPTION:  Represents the version of the script
 #===============================================================================
@@ -69,19 +85,19 @@ SCPT_VERSION="0.1"
 
 function usage()
 {
-    echo "Usage :  $0 [options] [--]
+  echo -e "Usage :  ${G}${SCPT_NAME}${RESET} COMMAND [args]\n"
 
-    Options:
-    -h|help           Display this message
-    -v|version        Display script version
-    -i|initialize     Enable workspace management
-    -l|list           List available workspaces
-    -n|new <name>     Create new workspace
-    -e|enable <name>  Enable given workspace"
-
+  echo -e "Options:"
+  echo -e "${TAB}${Y}-h|help          ${RESET}-- Display this message"
+  echo -e "${TAB}${Y}-v|version       ${RESET}-- Display script version"
+  echo -e "${TAB}${Y}-i|initialize    ${RESET}-- Enable workspace management"
+  echo -e "${TAB}${Y}-l|list          ${RESET}-- List available workspaces"
+  echo -e "${TAB}${Y}-n|new <name>    ${RESET}-- Create new workspace"
+  echo -e "${TAB}${Y}-e|enable <name> ${RESET}-- Enable given workspace"
 }
 
-[ $# -eq 0 ] && echo "Can't work without arguments" && exit 1
+# Exit early if no arguments received
+[ $# -eq 0 ] && usage && exit 1
 
 #===  HELPER ===================================================================
 #        NAME: _script_is_handling_workspaces
@@ -101,7 +117,7 @@ function _script_is_not_handling_workspaces()
 function _workspace_exists()
 {
     local ws_name=$1;
-    [ -d "${BONITAWM_WS_DIR}/$ws_name" ]
+    [ -d "${BONITAWM_WS_DIR}/${ws_name}" ]
 }
 
 #===  FUNCTION  ================================================================
@@ -113,7 +129,7 @@ function new_workspace()
 {
     local ws_name=$1
 
-    [ -z $ws_name ] && echo "Need a name for the new workspace." && exit 1
+    [ -z $ws_name ] && echo -e "${R}Need a name for the new workspace.${RESET}" && exit 1
 
     mkdir "${BONITAWM_WS_DIR}/${ws_name}"
 
@@ -130,10 +146,10 @@ function enable_workspace()
 {
     local ws_name=$1
 
-    [ -z $ws_name ] && echo "Need a workspace to enable" && exit 1
+    [ -z $ws_name ] && echo -e "${R}Need a workspace to enable${RESET}" && exit 1
 
     if _script_is_not_handling_workspaces; then
-        echo 'Need to initialize script first' &&  exit 1;
+        echo -e "${R}Need to initialize script first${RESET}" &&  exit 1;
     fi
 
     if _workspace_exists $ws_name; then
@@ -144,9 +160,9 @@ function enable_workspace()
         # Now we can enable the requested workspace
         ln -s "${BONITAWM_WS_DIR}/${ws_name}" "${BONITA_WS_DIR}/default"
 
-        echo "${ws_name} successfully enabled"
+        echo -e "${G}${ws_name} successfully enabled${RESET}"
     else
-        echo "workspace not available." && exit 1
+        echo -e "${R}Workspace not available.${RESET}" && exit 1
     fi
 }
 
@@ -172,13 +188,13 @@ function initialize_workspace_management()
         # This means default workspace is still in place so we should
         # back it up and re-enable it.
 
-        echo "Backing up default workspace in case you had anything done ;)"
+        echo -e "${B}Backing up default workspace in case you had anything done ;)${RESET}"
         mv "${BONITA_WS_DIR}/default" "${BONITAWM_WS_DIR}/default"
 
-        echo "Enabling default workspace"
+        echo -e "${B}Enabling default workspace${RESET}"
         ln -s "${BONITAWM_WS_DIR}/default" "${BONITA_WS_DIR}/default"
     else
-        echo "Workspace management seems to be already initialized."
+        echo -e "${G}Workspace management seems to be already initialized.${RESET}"
     fi
 }
 
@@ -189,7 +205,7 @@ function initialize_workspace_management()
 
 function print_version()
 {
-    echo "$0 -- Version $SCPT_VERSION"
+    echo "${G}$SCPT_NAME${RESET} -- Version $SCPT_VERSION"
 }
 
 #-----------------------------------------------------------------------
