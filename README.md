@@ -1,5 +1,5 @@
 Bonita Workspace Manager
-------------------------
+========================
 
 This is a rather simple utility to help management of workspaces in the
 community edition of BonitaBPM which doesn't have this feature.
@@ -8,8 +8,20 @@ It's done simply by creating new workspaces from a template and symlinking the
 active one to the BonitaBPM  installation directory.
 
 
+Disclaimer
+----------
+
+```
+Alpha software, i do not take any responsibility for any damage it may cause to
+your system, although it shouldn't.
+
+For safety BonitaBPM should be closed while using this utility.
+
+It has only been tested with version 7.3.3 under linux.
+```
+
 Usage:
-======
+------
 
 ```bash
 # Only required configuration
@@ -30,7 +42,7 @@ bonita_wm -list
 ```
 
 Installation
-============
+------------
 
 Clone repo and add [bonita_wm](./bin/bonita_wm) to your `$PATH`
 
@@ -42,26 +54,18 @@ ln -s ~/bonita_wm/bin/bonita_wm /usr/local/bin
 
 
 Configuration
-=============
+-------------
 
 Available configurations are:
 
-**BONITA_INSTALL_DIR**: [Required] Represents the installation directory of your
+**BONITA_INSTALL_DIR -- [Required]:** Represents the installation directory of your
 BonitaBPM.
 
-**BONITAWM_WS_DIR**: [Optional] Represents the directory where workspaces will
+**BONITAWM_WS_DIR    -- [Optional]:** Represents the directory where workspaces will
 be saved. If left unset the workspaces directory in the repo will be used.
 
-Disclaimer
-==========
-
-```
-For safety BonitaBPM should be closed while using this utility.
-It has  only been tested with version 7.3.3
-```
-
 Commands:
-=========
+---------
 
 All commands have a long and a short flag, ie: the `initialize` command can
 be invoked both as `-i` and as `-invoke`.
@@ -109,3 +113,16 @@ bonita_wm -e 'ws_name'
 bonita_wm -enable 'ws_name'
 ```
 
+License:
+--------
+
+See the [LICENSE](LICENSE).
+
+Contributing:
+-------------
+
+1. Fork it
+2. Create your feature branch (`git checkout -b my-new-feature`)
+3. Commit your changes (`git commit -am 'Add some feature'`)
+4. Push to the branch (`git push origin my-new-feature`)
+5. Create a new Pull Request

@@ -17,7 +17,6 @@
 set -e
 
 #===  COLORS AND CHARACTERS ====================================================
-
 R=$(tput setaf 1)
 G=$(tput setaf 2)
 Y=$(tput setaf 3)
@@ -35,54 +34,46 @@ if [ -z $BONITA_INSTALL_DIR ]; then
     exit 1
 fi
 
-
 #===  VARIABLE =================================================================
 #         NAME:  ROOT_DIR
 #  DESCRIPTION:  Represents the directory where the script is installed.
 #===============================================================================
-
 ROOT_DIR="$(dirname $(readlink ${BASH_SOURCE[*]}))/.."
 
 #===  VARIABLE =================================================================
 #         NAME:  BONITA_WS_DIR
 #  DESCRIPTION:  Represents the directory where bonita holds workspaces.
 #===============================================================================
-
 BONITA_WS_DIR="${BONITA_INSTALL_DIR}/workspace"
 
 #===  VARIABLE =================================================================
 #         NAME:  BONITAWM_WS_DIR
 #  DESCRIPTION:  Represents the directory where the script holds its workspaces.
 #===============================================================================
-
 [ -z $BONITAWM_WS_DIR ] && BONITAWM_WS_DIR="${ROOT_DIR}/workspaces"
 
 #===  VARIABLE =================================================================
 #         NAME:  EXAMPLE
 #  DESCRIPTION:  Represents the default workspace file used to create new ones.
 #===============================================================================
-
 EXAMPLE="${ROOT_DIR}/default.tar.gz"
 
 #===  VARIABLE =================================================================
 #         NAME:  SCPT_NAME
 #  DESCRIPTION:  Represents the name of the script
 #===============================================================================
-
 SCPT_NAME=$(basename $0)
 
 #===  VARIABLE =================================================================
 #         NAME:  SCPT_VERSION
 #  DESCRIPTION:  Represents the version of the script
 #===============================================================================
-
 SCPT_VERSION="0.1"
 
 #===  FUNCTION  ================================================================
 #         NAME:  usage
 #  DESCRIPTION:  Display usage information.
 #===============================================================================
-
 function usage()
 {
   echo -e "Usage :  ${G}${SCPT_NAME}${RESET} COMMAND [args]\n"
@@ -103,7 +94,6 @@ function usage()
 #        NAME: _script_is_handling_workspaces
 # DESCRIPTION: checks if the script is handling workspaces.
 #===============================================================================
-
 function _script_is_not_handling_workspaces()
 {
     [ ! -h $BONITA_WS_DIR/default ]
@@ -113,10 +103,10 @@ function _script_is_not_handling_workspaces()
 #         NAME:  _workspace_exists
 #  DESCRIPTION:  checks if a given workspace has alreaddy been created
 #===============================================================================
-
 function _workspace_exists()
 {
     local ws_name=$1;
+
     [ -d "${BONITAWM_WS_DIR}/${ws_name}" ]
 }
 
@@ -124,16 +114,20 @@ function _workspace_exists()
 #         NAME:  new_workspace
 #  DESCRIPTION:  create new bonita workspace
 #===============================================================================
-
 function new_workspace()
 {
     local ws_name=$1
 
     [ -z $ws_name ] && echo -e "${R}Need a name for the new workspace.${RESET}" && exit 1
 
-    mkdir "${BONITAWM_WS_DIR}/${ws_name}"
+    if _workspace_exists $ws_name; then
+      echo -e "${R}Workspace '${ws_name}' already exists." && exit 1
+    fi
 
+    mkdir "${BONITAWM_WS_DIR}/${ws_name}"
     tar -xzf $EXAMPLE -C "${BONITAWM_WS_DIR}/${ws_name}"
+
+    echo -e "${G}Workspace '${ws_name}' successfully created.${RESET}"
 }
 
 
@@ -141,7 +135,6 @@ function new_workspace()
 #         NAME:  enable_workspace
 #  DESCRIPTION:  enable given bonita workspace
 #===============================================================================
-
 function enable_workspace()
 {
     local ws_name=$1
@@ -153,14 +146,13 @@ function enable_workspace()
     fi
 
     if _workspace_exists $ws_name; then
-
         # First, let's remove old symlink
         rm "${BONITA_WS_DIR}/default"
 
         # Now we can enable the requested workspace
         ln -s "${BONITAWM_WS_DIR}/${ws_name}" "${BONITA_WS_DIR}/default"
 
-        echo -e "${G}${ws_name} successfully enabled${RESET}"
+        echo -e "${G}Workspace '${ws_name}' successfully enabled.${RESET}"
     else
         echo -e "${R}Workspace not available.${RESET}" && exit 1
     fi
@@ -170,7 +162,6 @@ function enable_workspace()
 #         NAME:  list_workspaces
 #  DESCRIPTION:  Lists available workspaces.
 #===============================================================================
-
 function list_workspaces()
 {
     ls -1 $BONITAWM_WS_DIR
@@ -181,7 +172,6 @@ function list_workspaces()
 #  DESCRIPTION:  Initializes workspace management.
 #                This means the script will start handling workspaces for bonita.
 #===============================================================================
-
 function initialize_workspace_management()
 {
     if [ ! -h "${BONITA_WS_DIR}/default" ]; then
@@ -202,10 +192,9 @@ function initialize_workspace_management()
 #         NAME:  print_version
 #  DESCRIPTION:  Prints script version
 #===============================================================================
-
 function print_version()
 {
-    echo "${G}$SCPT_NAME${RESET} -- Version $SCPT_VERSION"
+    echo "${G}${SCPT_NAME}${RESET} -- Version ${SCPT_VERSION}"
 }
 
 #-----------------------------------------------------------------------
@@ -221,15 +210,13 @@ while getopts ":hviln:e:" opt; do
 
         i|initialize) initialize_workspace_management ;;
 
-        l|list      ) list_workspaces; exit 0 ;;
+        l|list      ) list_workspaces && exit 0 ;;
 
         n|new       ) new_workspace $OPTARG ;;
 
         e|enable    ) enable_workspace $OPTARG ;;
 
-        * )  echo -e "\n  Option does not exist : $OPTARG\n" usage; exit 1; ;;
+        * )  echo -e "Option '${OPTARG}' does not exist or requires arguments"; usage; exit 1 ;;
 
     esac
 done
-
-shift $(($OPTIND-1))
