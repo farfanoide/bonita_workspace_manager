@@ -110,6 +110,18 @@ function _workspace_exists()
     [ -d "${BONITAWM_WS_DIR}/${ws_name}" ]
 }
 
+#===  HELPER ===================================================================
+#         NAME:  _ws_is_enabled
+#  DESCRIPTION:  checks if a given workspace is currently enabled
+#===============================================================================
+function _ws_is_enabled()
+{
+    local ws_name=$1;
+    local currently_enabled=$(basename $(readlink $BONITA_WS_DIR/default))
+
+    [ "${ws_name}" = "${currently_enabled}" ]
+}
+
 #===  FUNCTION  ================================================================
 #         NAME:  new_workspace
 #  DESCRIPTION:  create new bonita workspace
@@ -164,7 +176,11 @@ function enable_workspace()
 #===============================================================================
 function list_workspaces()
 {
-    ls -1 $BONITAWM_WS_DIR
+    local workspaces=$(ls -1 $BONITAWM_WS_DIR)
+
+    for ws in ${workspaces[*]}; do
+      echo -e $ws $(_ws_is_enabled $ws && echo "${G}(enabled)${RESET}")
+    done
 }
 
 #===  FUNCTION  ================================================================
