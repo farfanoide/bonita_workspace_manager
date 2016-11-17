@@ -27,29 +27,29 @@ Usage:
 # Only required configuration
 export BONITA_INSTALL_DIR='/path/to/bonita/installation'
 
-# First we have to let bonita_wm start handling workspaces. This will
-bonita_wm -initialize
+# First we have to let bonitawm start handling workspaces. This will
+bonitawm -initialize
 
 # Now we can create new workspaces.
-bonita_wm -new somews
+bonitawm -new somews
 
 # and enable them
-bonita_wm -enable somews
+bonitawm -enable somews
 
 # to list available workspaces
-bonita_wm -list
+bonitawm -list
 # => default somews
 ```
 
 Installation
 ------------
 
-Clone repo and add [bonita_wm](./bin/bonita_wm) to your `$PATH`
+Clone repo and add [bonitawm](./bin/bonitawm) to your `$PATH`
 
 ```bash
-git clone https://github.com/farfanoide/bonita_workspace_manager ~/bonita_wm
+git clone https://github.com/farfanoide/bonita_workspace_manager ~/bonitawm
 
-ln -s ~/bonita_wm/bin/bonita_wm /usr/local/bin
+ln -s ~/bonitawm/bin/bonitawm /usr/local/bin
 ```
 
 
@@ -72,14 +72,14 @@ be invoked both as `-i` and as `-invoke`.
 
 ### Initialize
 
-Enables `bonita_wm` to start managing workspaces. it basically checks if the
+Enables `bonitawm` to start managing workspaces. it basically checks if the
 default workspace currently installed is a directory or a symlink. If it's a
-directory `bonita_wm` will copy it to the workspaces directory and enable it.
+directory `bonitawm` will copy it to the workspaces directory and enable it.
 
 ```bash
-bonita_wm -i
+bonitawm -i
 # or
-bonita_wm -initialize
+bonitawm -initialize
 ```
 
 ### List
@@ -87,9 +87,9 @@ bonita_wm -initialize
 Lists all available workspaces currently created.
 
 ```bash
-bonita_wm -l
+bonitawm -l
 # or
-bonita_wm -list
+bonitawm -list
 ```
 
 ### New
@@ -98,9 +98,9 @@ Receives a `name` as only argument and creates a new workspaces with the given
 name.
 
 ```bash
-bonita_wm -n 'ws_name'
+bonitawm -n 'ws_name'
 # or
-bonita_wm -new 'ws_name'
+bonitawm -new 'ws_name'
 ```
 
 ### Enable
@@ -108,9 +108,9 @@ bonita_wm -new 'ws_name'
 Receives a `name` as only argument and enables said workspace if available.
 
 ```bash
-bonita_wm -e 'ws_name'
+bonitawm -e 'ws_name'
 # or
-bonita_wm -enable 'ws_name'
+bonitawm -enable 'ws_name'
 ```
 
 License:
