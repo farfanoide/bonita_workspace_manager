@@ -113,6 +113,14 @@ bonitawm -e 'ws_name'
 bonitawm -enable 'ws_name'
 ```
 
+Completions
+-----------
+
+Basic zsh completion script [is included](./completions/_bonitawm)
+
+Please note that it must be edited to point to workspaces directory and added to
+fpath.
+
 License:
 --------
 

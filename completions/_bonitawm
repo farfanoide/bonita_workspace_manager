@@ -1,0 +1,32 @@
+#compdef bonitawm
+# ------------------------------------------------------------------------------
+# Description
+# -----------
+#
+#  Completion script for bonita workspace manager. 
+#  https://github.com/farfanoide/bonita_workspace_manager
+#
+# ------------------------------------------------------------------------------
+# Authors
+# -------
+#
+#  * Farfanoide (https://github.com/farfanoide)
+#
+# ------------------------------------------------------------------------------
+local workspaces
+
+workspaces=($(\ls $SRC_DIR/bonita_workspace_manager/workspaces))
+
+_arguments -s \
+    '-h::Show help menu'\
+    '-help::Show help menu'\
+    '-v::Show program version number'\
+    '-version::Show program version number'\
+    '-i::Enable workspace management'\
+    '-initialize::Enable workspace management'\
+    '-l::List all available workspaces'\
+    '-list::List all available workspaces'\
+    '-e:Enable Workspace:($workspaces)'\
+    '-enable:Enable Workspace:($workspaces)'\
+    '-n::Create new workspace'\
+    '-new::Create new workspace'
