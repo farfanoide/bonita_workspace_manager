@@ -3,7 +3,6 @@
 # Description
 # -----------
 #
-#
 #  Script to handle bonita workspaces in the communitiy edition
 #
 # ---------------------------------------------------------------------------------------
@@ -91,6 +90,37 @@ function usage()
 [ $# -eq 0 ] && usage && exit 1
 
 #===  HELPER ===================================================================
+#        NAME: _abort
+# DESCRIPTION: exit with error code optionally printing in red a given message
+#===============================================================================
+function _abort()
+{
+  local message="$*"
+  echo -e "${R}${message}${RESET}" ; exit 1
+}
+
+#===  HELPER ===================================================================
+#        NAME: _success
+# DESCRIPTION: gracefully exit optionally printing in green a given message
+#===============================================================================
+function _success()
+{
+  local message="$*"
+  echo -e "${G}${message}${RESET}"
+}
+
+#===  HELPER ===================================================================
+#        NAME: _info
+# DESCRIPTION: prints a given message in blue
+#===============================================================================
+function _info()
+{
+  local message="$*"
+  echo -e "${B}${message}${RESET}"
+}
+
+
+#===  HELPER ===================================================================
 #        NAME: _script_is_handling_workspaces
 # DESCRIPTION: checks if the script is handling workspaces.
 #===============================================================================
@@ -130,16 +160,16 @@ function new_workspace()
 {
     local ws_name=$1
 
-    [ -z $ws_name ] && echo -e "${R}Need a name for the new workspace.${RESET}" && exit 1
+    [ -z $ws_name ] && _abort "Need a name for the new workspace."
 
     if _workspace_exists $ws_name; then
-      echo -e "${R}Workspace '${ws_name}' already exists." && exit 1
+      _abort "Workspace '${ws_name}' already exists."
     fi
 
     mkdir "${BONITAWM_WS_DIR}/${ws_name}"
     tar -xzf $EXAMPLE -C "${BONITAWM_WS_DIR}/${ws_name}"
 
-    echo -e "${G}Workspace '${ws_name}' successfully created.${RESET}"
+    _success "Workspace '${ws_name}' successfully created."
 }
 
 
@@ -151,10 +181,10 @@ function enable_workspace()
 {
     local ws_name=$1
 
-    [ -z $ws_name ] && echo -e "${R}Need a workspace to enable${RESET}" && exit 1
+    [ -z $ws_name ] && _abort "Need a workspace to enable"
 
     if _script_is_not_handling_workspaces; then
-        echo -e "${R}Need to initialize script first${RESET}" &&  exit 1;
+        _abort "Need to initialize script first"
     fi
 
     if _workspace_exists $ws_name; then
@@ -164,9 +194,9 @@ function enable_workspace()
         # Now we can enable the requested workspace
         ln -s "${BONITAWM_WS_DIR}/${ws_name}" "${BONITA_WS_DIR}/default"
 
-        echo -e "${G}Workspace '${ws_name}' successfully enabled.${RESET}"
+        _success "Workspace '${ws_name}' successfully enabled"
     else
-        echo -e "${R}Workspace not available.${RESET}" && exit 1
+        _abort "Workspace not available."
     fi
 }
 
@@ -179,7 +209,7 @@ function list_workspaces()
     local workspaces=$(ls -1 $BONITAWM_WS_DIR)
 
     for ws in ${workspaces[*]}; do
-      echo -e $ws $(_ws_is_enabled $ws && echo "${G}(enabled)${RESET}")
+      echo -e "$ws $(_ws_is_enabled $ws && _success '(enabled)')"
     done
 }
 
@@ -194,13 +224,13 @@ function initialize_workspace_management()
         # This means default workspace is still in place so we should
         # back it up and re-enable it.
 
-        echo -e "${B}Backing up default workspace in case you had anything done ;)${RESET}"
+        _info "Backing up default workspace in case you had anything done ;)"
         mv "${BONITA_WS_DIR}/default" "${BONITAWM_WS_DIR}/default"
 
-        echo -e "${B}Enabling default workspace${RESET}"
+        _info "Enabling default workspace"
         ln -s "${BONITAWM_WS_DIR}/default" "${BONITA_WS_DIR}/default"
     else
-        echo -e "${G}Workspace management seems to be already initialized.${RESET}"
+      _success "Workspace management seems to be already initialized."
     fi
 }
 
@@ -221,15 +251,10 @@ while getopts ":hviln:e:" opt; do
     case $opt in
 
         h|help      ) usage; exit 0 ;;
-
         v|version   ) print_version; exit 0 ;;
-
         i|initialize) initialize_workspace_management ;;
-
         l|list      ) list_workspaces && exit 0 ;;
-
         n|new       ) new_workspace $OPTARG ;;
-
         e|enable    ) enable_workspace $OPTARG ;;
 
         * )  echo -e "Option '${OPTARG}' does not exist or requires arguments"; usage; exit 1 ;;
