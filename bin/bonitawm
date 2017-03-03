@@ -33,11 +33,41 @@ if [ -z $BONITA_INSTALL_DIR ]; then
     exit 1
 fi
 
+
+#===  HELPER ===================================================================
+#        NAME: _resolve_link
+# DESCRIPTION: returns target of a symbolic link
+#===============================================================================
+READLINK=$(type -p greadlink readlink | head -1)
+function _resolve_link()
+{
+    $READLINK "$1"
+}
+
+#===  HELPER ===================================================================
+#        NAME: _abs_dirname
+# DESCRIPTION: returns absolute path to a given file/dir
+#===============================================================================
+function _abs_dirname()
+{
+  local cwd="$PWD"
+  local path="$1"
+
+  while [ -n "$path" ]; do
+    cd "${path%/*}"
+    local name="${path##*/}"
+    path="$(_resolve_link "$name" || true)"
+  done
+
+  pwd
+  cd "$cwd"
+}
+
 #===  VARIABLE =================================================================
 #         NAME:  ROOT_DIR
 #  DESCRIPTION:  Represents the directory where the script is installed.
 #===============================================================================
-ROOT_DIR="$(dirname $(readlink ${BASH_SOURCE[*]}))/.."
+ROOT_DIR="$(_abs_dirname "$(_abs_dirname "$0")/../..")"
 
 #===  VARIABLE =================================================================
 #         NAME:  BONITA_WS_DIR
@@ -119,6 +149,15 @@ function _info()
   echo -e "${B}${message}${RESET}"
 }
 
+#===  HELPER ===================================================================
+#        NAME: _bonita_is_running
+# DESCRIPTION: checks wether BonitaBPMCommunity is running
+#===============================================================================
+_bonita_is_running()
+{
+    # TODO: check cross platform way to use pgrep
+    ps -e | grep BonitaBPM | grep -qv grep
+}
 
 #===  HELPER ===================================================================
 #        NAME: _script_is_handling_workspaces
@@ -147,7 +186,7 @@ function _workspace_exists()
 function _ws_is_enabled()
 {
     local ws_name=$1;
-    local currently_enabled=$(basename $(readlink $BONITA_WS_DIR/default))
+    local currently_enabled=$(basename "$BONITA_WS_DIR/default")
 
     [ "${ws_name}" = "${currently_enabled}" ]
 }
@@ -180,6 +219,11 @@ function new_workspace()
 function enable_workspace()
 {
     local ws_name=$1
+
+    if _bonita_is_running; then
+        _abort "Please close BonitaBPMCommunity before running this command."\
+            "\nOtherwise you might corrupt your workspace."
+    fi
 
     [ -z $ws_name ] && _abort "Need a workspace to enable"
 
@@ -220,6 +264,11 @@ function list_workspaces()
 #===============================================================================
 function initialize_workspace_management()
 {
+    if _bonita_is_running; then
+        _abort "Please close BonitaBPMCommunity before running this command."\
+            "\nOtherwise you might corrupt your workspace."
+    fi
+
     if [ ! -h "${BONITA_WS_DIR}/default" ]; then
         # This means default workspace is still in place so we should
         # back it up and re-enable it.
