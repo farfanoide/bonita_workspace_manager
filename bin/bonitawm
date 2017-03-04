@@ -186,7 +186,7 @@ function _workspace_exists()
 function _ws_is_enabled()
 {
     local ws_name=$1;
-    local currently_enabled=$(basename "$BONITA_WS_DIR/default")
+    local currently_enabled=$(basename $(_resolve_link "$BONITA_WS_DIR/default"))
 
     [ "${ws_name}" = "${currently_enabled}" ]
 }
