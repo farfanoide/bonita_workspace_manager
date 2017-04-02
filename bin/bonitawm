@@ -15,7 +15,7 @@
 
 set -e
 
-#===  COLORS AND CHARACTERS ====================================================
+#==== COLORS AND CHARACTERS ====================================================
 R=$(tput setaf 1)
 G=$(tput setaf 2)
 Y=$(tput setaf 3)
@@ -23,7 +23,7 @@ B=$(tput setaf 4)
 TAB='  '
 RESET=$(tput sgr0)
 
-#===  BASIC CONFIGURATIONS CHECKS ==============================================
+#==== BASIC CONFIGURATIONS CHECKS ==============================================
 
 if [ -z $BONITA_INSTALL_DIR ]; then
     echo
@@ -34,21 +34,21 @@ if [ -z $BONITA_INSTALL_DIR ]; then
 fi
 
 
-#===  HELPER ===================================================================
+#==== HELPER ===================================================================
 #        NAME: _resolve_link
 # DESCRIPTION: returns target of a symbolic link
 #===============================================================================
 READLINK=$(type -p greadlink readlink | head -1)
-function _resolve_link()
+_resolve_link()
 {
     $READLINK "$1"
 }
 
-#===  HELPER ===================================================================
+#==== HELPER ===================================================================
 #        NAME: _abs_dirname
 # DESCRIPTION: returns absolute path to a given file/dir
 #===============================================================================
-function _abs_dirname()
+_abs_dirname()
 {
   local cwd="$PWD"
   local path="$1"
@@ -63,47 +63,47 @@ function _abs_dirname()
   cd "$cwd"
 }
 
-#===  VARIABLE =================================================================
+#==== VARIABLE =================================================================
 #         NAME:  ROOT_DIR
 #  DESCRIPTION:  Represents the directory where the script is installed.
 #===============================================================================
 ROOT_DIR="$(_abs_dirname "$(_abs_dirname "$0")/../..")"
 
-#===  VARIABLE =================================================================
+#==== VARIABLE =================================================================
 #         NAME:  BONITA_WS_DIR
 #  DESCRIPTION:  Represents the directory where bonita holds workspaces.
 #===============================================================================
 BONITA_WS_DIR="${BONITA_INSTALL_DIR}/workspace"
 
-#===  VARIABLE =================================================================
+#==== VARIABLE =================================================================
 #         NAME:  BONITAWM_WS_DIR
 #  DESCRIPTION:  Represents the directory where the script holds its workspaces.
 #===============================================================================
 [ -z $BONITAWM_WS_DIR ] && BONITAWM_WS_DIR="${ROOT_DIR}/workspaces"
 
-#===  VARIABLE =================================================================
+#==== VARIABLE =================================================================
 #         NAME:  EXAMPLE
 #  DESCRIPTION:  Represents the default workspace file used to create new ones.
 #===============================================================================
 EXAMPLE="${ROOT_DIR}/default.tar.gz"
 
-#===  VARIABLE =================================================================
+#==== VARIABLE =================================================================
 #         NAME:  SCPT_NAME
 #  DESCRIPTION:  Represents the name of the script
 #===============================================================================
 SCPT_NAME=$(basename $0)
 
-#===  VARIABLE =================================================================
+#==== VARIABLE =================================================================
 #         NAME:  SCPT_VERSION
 #  DESCRIPTION:  Represents the version of the script
 #===============================================================================
 SCPT_VERSION="0.1"
 
-#===  FUNCTION  ================================================================
+#==== FUNCTION =================================================================
 #         NAME:  usage
 #  DESCRIPTION:  Display usage information.
 #===============================================================================
-function usage()
+usage()
 {
   echo -e "Usage :  ${G}${SCPT_NAME}${RESET} COMMAND [args]\n"
 
@@ -119,37 +119,37 @@ function usage()
 # Exit early if no arguments received
 [ $# -eq 0 ] && usage && exit 1
 
-#===  HELPER ===================================================================
+#==== HELPER ===================================================================
 #        NAME: _abort
 # DESCRIPTION: exit with error code optionally printing in red a given message
 #===============================================================================
-function _abort()
+_abort()
 {
   local message="$*"
   echo -e "${R}${message}${RESET}" ; exit 1
 }
 
-#===  HELPER ===================================================================
+#==== HELPER ===================================================================
 #        NAME: _success
 # DESCRIPTION: gracefully exit optionally printing in green a given message
 #===============================================================================
-function _success()
+_success()
 {
   local message="$*"
   echo -e "${G}${message}${RESET}"
 }
 
-#===  HELPER ===================================================================
+#==== HELPER ===================================================================
 #        NAME: _info
 # DESCRIPTION: prints a given message in blue
 #===============================================================================
-function _info()
+_info()
 {
   local message="$*"
   echo -e "${B}${message}${RESET}"
 }
 
-#===  HELPER ===================================================================
+#==== HELPER ===================================================================
 #        NAME: _bonita_is_running
 # DESCRIPTION: checks wether BonitaBPMCommunity is running
 #===============================================================================
@@ -159,43 +159,52 @@ _bonita_is_running()
     ps -e | grep BonitaBPM | grep -qv grep
 }
 
-#===  HELPER ===================================================================
+#==== HELPER ===================================================================
 #        NAME: _script_is_handling_workspaces
 # DESCRIPTION: checks if the script is handling workspaces.
 #===============================================================================
-function _script_is_not_handling_workspaces()
+_script_is_not_handling_workspaces()
 {
     [ ! -h $BONITA_WS_DIR/default ]
 }
 
-#===  HELPER ===================================================================
+#==== HELPER ===================================================================
 #         NAME:  _workspace_exists
 #  DESCRIPTION:  checks if a given workspace has alreaddy been created
 #===============================================================================
-function _workspace_exists()
+_workspace_exists()
 {
     local ws_name=$1;
 
     [ -d "${BONITAWM_WS_DIR}/${ws_name}" ]
 }
 
-#===  HELPER ===================================================================
+#==== HELPER ===================================================================
 #         NAME:  _ws_is_enabled
 #  DESCRIPTION:  checks if a given workspace is currently enabled
 #===============================================================================
-function _ws_is_enabled()
+_ws_is_enabled()
 {
-    local ws_name=$1;
+    local ws_name=$1
     local currently_enabled=$(basename $(_resolve_link "$BONITA_WS_DIR/default"))
 
     [ "${ws_name}" = "${currently_enabled}" ]
 }
 
-#===  FUNCTION  ================================================================
+#==== HELPER ===================================================================
+#         NAME:  _get_workspaces
+#  DESCRIPTION:  returns a list of available workspaces
+#===============================================================================
+_get_workspaces()
+{
+    \ls -1 $BONITAWM_WS_DIR
+}
+
+#==== FUNCTION  ================================================================
 #         NAME:  new_workspace
 #  DESCRIPTION:  create new bonita workspace
 #===============================================================================
-function new_workspace()
+new_workspace()
 {
     local ws_name=$1
 
@@ -212,11 +221,11 @@ function new_workspace()
 }
 
 
-#===  FUNCTION  ================================================================
+#==== FUNCTION  ================================================================
 #         NAME:  enable_workspace
 #  DESCRIPTION:  enable given bonita workspace
 #===============================================================================
-function enable_workspace()
+enable_workspace()
 {
     local ws_name=$1
 
@@ -244,25 +253,23 @@ function enable_workspace()
     fi
 }
 
-#===  FUNCTION  ================================================================
+#==== FUNCTION  ================================================================
 #         NAME:  list_workspaces
 #  DESCRIPTION:  Lists available workspaces.
 #===============================================================================
-function list_workspaces()
+list_workspaces()
 {
-    local workspaces=$(ls -1 $BONITAWM_WS_DIR)
-
-    for ws in ${workspaces[*]}; do
+    for ws in $(_get_workspaces); do
       echo -e "$ws $(_ws_is_enabled $ws && _success '(enabled)')"
     done
 }
 
-#===  FUNCTION  ================================================================
+#==== FUNCTION  ================================================================
 #         NAME:  initialize_workspace_management
 #  DESCRIPTION:  Initializes workspace management.
 #                This means the script will start handling workspaces for bonita.
 #===============================================================================
-function initialize_workspace_management()
+initialize_workspace_management()
 {
     if _bonita_is_running; then
         _abort "Please close BonitaBPMCommunity before running this command."\
@@ -283,11 +290,11 @@ function initialize_workspace_management()
     fi
 }
 
-#===  FUNCTION  ================================================================
+#==== FUNCTION  ================================================================
 #         NAME:  print_version
 #  DESCRIPTION:  Prints script version
 #===============================================================================
-function print_version()
+print_version()
 {
     echo "${G}${SCPT_NAME}${RESET} -- Version ${SCPT_VERSION}"
 }
